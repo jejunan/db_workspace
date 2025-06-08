@@ -1,8 +1,8 @@
 services:
   mysql-db:
-    image: mysql:5.7
+    image: mysql:8.0
     restart: always
-    platform: linux/amd64
+    platform: linux/arm64
     environment:
       MYSQL_ROOT_PASSWORD: onion1!
       MYSQL_DATABASE: onion-db
