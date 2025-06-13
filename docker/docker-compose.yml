@@ -2,7 +2,7 @@ services:
   mysql-db:
     image: mysql:8.0
     restart: always
-    platform: linux/arm64
+    platform: linux/amd64
     environment:
       MYSQL_ROOT_PASSWORD: onion1!
       MYSQL_DATABASE: onion-db
@@ -12,5 +12,6 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
+
 volumes:
   db_data:
