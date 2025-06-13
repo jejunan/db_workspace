@@ -8,11 +8,13 @@ import com.onion.backend.service.UserService;          // 사용자 서비스 �
 import io.swagger.v3.oas.annotations.Parameter;        // Swagger 문서화를 위한 어노테이션
 
 // REST API와 관련된 Spring 어노테이션
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired; // 의존성 주입을 위한 어노테이션
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;        // HTTP 응답을 감싸는 클래스
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
+
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -61,10 +63,27 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestParam String username, @RequestParam String password) throws AuthenticationException {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+    public String login(@RequestParam String username, @RequestParam String password, HttpServletResponse response) throws AuthenticationException {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        return jwtUtil.generateToken(userDetails.getUsername());
+
+        String token = jwtUtil.generateToken(userDetails.getUsername());
+        Cookie cookie = new Cookie("onion_token", token);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 60); // 1시간 유효
+
+        response.addCookie(cookie);
+        return token;
+    }
+
+    @PostMapping("/logout")
+    public void logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("onion_token", null);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0); // 쿠키 삭제
+        response.addCookie(cookie);
     }
 
     @PostMapping("/token/validation")
